@@ -27,7 +27,7 @@
   (a-star-inner
     graph
     (clojure.data.priority-map/priority-map start-node 0)
-    {}
+    []
     end-node
     fheuristic))
 
