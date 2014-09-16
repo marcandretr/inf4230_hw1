@@ -4,22 +4,41 @@
 
 
 (defn- a-star-inner
-  [graph opened closed goal fheuristic]
+  [graph opened closed parents goal fheuristic]
   (if (= (peek opened) goal)
+    ; Todo: Walk back the parent map.
     :found-path
 
-    (recur
-      graph
-      (loop [futurly-opened (pop opened)
-             keys-to-open (graph (peek opened))]
-        (recur
-          (assoc futurly-opened
-            (peek keys-to-open)
-            ((graph :move-cost) (pop opened) (peek keys-to-open)))
-          (pop keys-to-open)))
-      (cons (peek opened) closed)
-      goal
-      fheuristic)))
+    (let [[new-opened new-parents]
+          (reduce
+            (fn [[op-map par-map] dest-kw-hrt]
+              (if (or
+                    ; The open pmap does not contain
+                    (not (contains? op-map (dest-kw-hrt 0)))
+                    (> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1)))
+                ; Replace
+
+                ; Return the new maps
+                [(assoc op-map (dest-kw-hrt 0) (dest-kw-hrt 1))
+                 (assoc par-map (dest-kw-hrt 0) (peek opened))]
+
+                ; Return the same input
+                [op-map par-map]))
+            [(pop opened) parents]
+            ((graph (peek opened)) :dest))]
+
+      (recur
+        ; Return back the graph
+        graph
+        new-opened
+        (cons (peek opened) closed)
+        new-parents
+        goal
+        fheuristic)
+
+
+      )
+    ))
 
 
 (defn a-star
@@ -27,7 +46,8 @@
   (a-star-inner
     graph
     (clojure.data.priority-map/priority-map start-node 0)
-    []
+    {}
+    {}
     end-node
     fheuristic))
 
