@@ -4,16 +4,22 @@
 
 
 (defn- a-star-inner
-  [graph open closed goal fheuristic]
+  [graph opened closed goal fheuristic]
+  (if (= (peek opened) goal)
+    :found-path
 
-
-
-
-
-
-
-
-  )
+    (recur
+      graph
+      (loop [futurly-opened (pop opened)
+             keys-to-open (graph (peek opened))]
+        (recur
+          (assoc futurly-opened
+            (peek keys-to-open)
+            ((graph :move-cost) (pop opened) (peek keys-to-open)))
+          (pop keys-to-open)))
+      (cons (peek opened) closed)
+      goal
+      fheuristic)))
 
 
 (defn a-star
