@@ -1,5 +1,6 @@
 (ns hw1.core
   (:require hw1.uqam_map_parser
+            hw1.osm_map_parser
             hw1.allstar)
   (:gen-class))
 
@@ -14,6 +15,6 @@
   (hw1.allstar/a-star umap :n1 :n4 heur)
 
 
-
+  ;(hw1.osm_map_parser/parse-map "resources/carte-osm.osm")
 
   )

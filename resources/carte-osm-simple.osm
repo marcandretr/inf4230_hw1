@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="Overpass API">
+<note>The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.</note>
+<meta osm_base="2014-09-17T00:14:02Z"/>
+
+  <node id="1" lat="1" lon="0" version="8" timestamp="2012-02-17T06:43:54Z" changeset="10708222" uid="225842" user="schnelli"/>
+  <node id="2" lat="1" lon="1" version="10" timestamp="2012-03-06T12:08:49Z" changeset="10889356" uid="225842" user="schnelli"/>
+  <node id="3" lat="1" lon="2" version="9" timestamp="2010-06-06T18:53:36Z" changeset="4921232" uid="4786" user="Romain Aviolat [Xens]"/>
+  <node id="4" lat="1" lon="3" version="8" timestamp="2012-02-17T06:43:54Z" changeset="10708222" uid="225842" user="schnelli"/>
+  <node id="5" lat="2" lon="0" version="11" timestamp="2012-02-17T06:43:54Z" changeset="10708222" uid="225842" user="schnelli"/>
+  <node id="6" lat="2" lon="1" version="9" timestamp="2011-04-23T21:18:50Z" changeset="7947728" uid="4786" user="Romain Aviolat [Xens]"/>
+  <node id="7" lat="2" lon="2" version="3" timestamp="2011-09-21T10:59:53Z" changeset="9359362" uid="225842" user="schnelli"/>
+  <node id="8" lat="2" lon="3" version="4" timestamp="2012-03-30T12:03:33Z" changeset="11152783" uid="225842" user="schnelli"/>
+  <node id="9" lat="0" lon="1" version="3" timestamp="2012-03-30T12:03:33Z" changeset="11152783" uid="225842" user="schnelli"/>
+  <node id="10" lat="3" lon="1" version="2" timestamp="2010-11-07T19:59:51Z" changeset="6315395" uid="4786" user="Romain Aviolat [Xens]"/>
+  <node id="11" lat="0" lon="2" version="3" timestamp="2012-03-30T12:03:33Z" changeset="11152783" uid="225842" user="schnelli"/>
+  <node id="12" lat="3" lon="2" version="2" timestamp="2010-11-07T19:59:51Z" changeset="6315395" uid="4786" user="Romain Aviolat [Xens]"/>
+
+  <way id="1" version="10" timestamp="2011-11-22T11:40:01Z" changeset="9907959" uid="225842" user="schnelli">
+    <nd ref="4"/>
+    <nd ref="3"/>
+    <nd ref="2"/>
+    <nd ref="1"/>
+    <tag k="highway" v="unclassified"/>
+    <tag k="name" v="Avenue Genéral-Guisan"/>
+  </way>
+  <way id="2" version="2" timestamp="2013-07-19T12:19:55Z" changeset="17011271" uid="84054" user="fredjunod">
+    <nd ref="8"/>
+    <nd ref="7"/>
+    <nd ref="6"/>
+    <nd ref="5"/>
+    <tag k="highway" v="service"/>
+    <tag k="service" v="alley"/>
+  </way>
+  <way id="3" version="4" timestamp="2011-11-22T11:40:02Z" changeset="9907959" uid="225842" user="schnelli">
+    <nd ref="9"/>
+    <nd ref="2"/>
+    <nd ref="6"/>
+    <nd ref="10"/>
+    <tag k="highway" v="service"/>
+    <tag k="service" v="parking_aisle"/>
+    <tag k="source" v="Orthophoto Yverdon 2011 / R-Pod @ HEIG-VD"/>
+  </way>
+  <way id="4" version="4" timestamp="2013-07-19T12:19:54Z" changeset="17011271" uid="84054" user="fredjunod">
+    <nd ref="11"/>
+    <nd ref="3"/>
+    <nd ref="7"/>
+    <nd ref="12"/>
+    <tag k="highway" v="service"/>
+    <tag k="name" v="Rue du Mont-Tendre"/>
+    <tag k="service" v="driveway"/>
+  </way>
+  <relation id="1555792" version="3" timestamp="2011-04-27T09:31:53Z" changeset="7983176" uid="17835" user="Stéphane Brunner">
+    <member type="way" ref="61500281" role="outer"/>
+    <member type="way" ref="110519083" role="outer"/>
+    <member type="way" ref="109921778" role="outer"/>
+    <tag k="landuse" v="residential"/>
+    <tag k="name" v="Yverdon-les-Bains"/>
+    <tag k="type" v="multipolygon"/>
+  </relation>
+
+</osm>
