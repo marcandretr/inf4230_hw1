@@ -8,15 +8,15 @@
   (let [[from-lng from-lat] (from :geo)
         [to-lng to-lat] (to :geo)
         rad-deg-ratio (/ (Math/PI) 180)
-        2earth-radius 12742000]
+        twice-earth-radius 12742000]
 
     (let [lng1 (* from-lng rad-deg-ratio)
           lng2 (* to-lng rad-deg-ratio)
           lat1 (* from-lat rad-deg-ratio)
-          lat2 (* to-lng rad-deg-ratio)]
+          lat2 (* to-lat rad-deg-ratio)]
       (let [s1 (Math/sin (/ (- lat2 lat1) 2))
             s2 (Math/sin (/ (- lng2 lng1) 2))]
-        (* 2earth-radius (Math/asin (Math/sqrt (+ (Math/pow s1 2) (* (Math/cos lat1) (Math/cos lat2) (Math/pow s2 2))))))))))
+        (* twice-earth-radius (Math/asin (Math/sqrt (+ (Math/pow s1 2) (* (Math/cos lat1) (Math/cos lat2) (Math/pow s2 2))))))))))
 
 
 (defn parse-part-1

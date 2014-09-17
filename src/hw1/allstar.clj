@@ -1,31 +1,47 @@
 (ns hw1.allstar
   (:require clojure.data.priority-map))
+
 ; You can also call it A*
 
 
 (defn- a-star-inner
   [graph opened closed parents goal fheuristic]
-  (if (= (peek opened) goal)
+  (if (= ((peek opened) 0) goal)
     ; Todo: Walk back the parent map.
-    :found-path
+    parents
 
     (let [[new-opened new-parents]
           (reduce
+            ; The reduce function
             (fn [[op-map par-map] dest-kw-hrt]
-              (if (or
-                    ; The open pmap does not contain
-                    (not (contains? op-map (dest-kw-hrt 0)))
-                    (> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1)))
-                ; Replace
-
+              (if (and
+                    (not (get closed (dest-kw-hrt 0)))
+                    (or
+                      ; The open pmap does not contain
+                      (not (contains? op-map (dest-kw-hrt 0)))
+                      (> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1))))
                 ; Return the new maps
                 [(assoc op-map (dest-kw-hrt 0) (dest-kw-hrt 1))
                  (assoc par-map (dest-kw-hrt 0) (peek opened))]
-
-                ; Return the same input
+                ; Return the same unmodified maps
                 [op-map par-map]))
+            ; The reduce initial value (so it's more like a fold)
             [(pop opened) parents]
-            ((graph (peek opened)) :dest))]
+            ; The list we are passing to the reduce
+            (for [dest
+                  (
+                    (graph
+                      ((peek opened) 0)
+                      ) :dest)]
+              [dest
+               (+
+                 (fheuristic)
+                 ((graph :move-cost)
+                  (graph ((peek opened) 0))
+                  (graph dest)
+                  ))]
+
+              ))]
 
       (recur
         ; Return back the graph
@@ -34,11 +50,7 @@
         (cons (peek opened) closed)
         new-parents
         goal
-        fheuristic)
-
-
-      )
-    ))
+        fheuristic))))
 
 
 (defn a-star
