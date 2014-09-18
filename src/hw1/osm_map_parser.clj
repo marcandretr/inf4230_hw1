@@ -1,13 +1,14 @@
 (ns hw1.osm_map_parser
   (:require [clojure.java.io :as io]
             [clojure.data.xml :as xml]
-            [clojure.zip :as zip]))
+            [clojure.zip :as zip]
+            [hw1.uqam_map_parser :as map]))
 
 (defn parse-map
   "Parses file and outputs the node structure"
   [file-name]
 
-  (let [check-one-way false]
+  (let [check-one-way true]
     ; Read file
     (with-open [reader (io/reader file-name)]
       ; Loop with the xml tree, the map of nodes and all nodes key that are part of a way
@@ -15,7 +16,7 @@
         ; If all the xml is consumed
         (if (= (count xml-doc) 0)
           ; Return all the nodes of the map that are part of a way
-          (into {} (filter #(contains? nodes-in-way (key %)) node-map))
+          (assoc (into {} (filter #(contains? nodes-in-way (key %)) node-map)) :move-cost map/cost-of-move)
           ; Else
           (let [element (first xml-doc)]
             ; If we got a node
@@ -23,7 +24,7 @@
               (let [node (:attrs element)]
                 ; Stock it in the map with his coordinates and loop again
                 (recur (rest xml-doc)
-                       (assoc node-map (keyword (str "n" (:id node))) {:geo [(:lat node) (:lon node)]})
+                       (assoc node-map (keyword (str "n" (:id node))) {:geo [(read-string (:lat node)) (read-string (:lon node))]})
                        nodes-in-way))
               ; If we got a way
               (if (= (:tag element) :way)

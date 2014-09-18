@@ -14,9 +14,10 @@
     [from to]
     (hw1.uqam_map_parser/cost-of-move from to))
 
-  (hw1.allstar/a-star umap :n1 :n8 heurist1)
+  (println (hw1.allstar/a-star umap :n1 :n8 heurist1))
 
+  (def omap (hw1.osm_map_parser/parse-map "resources/carte-osm-simple.osm"))
 
-  ;(hw1.osm_map_parser/parse-map "resources/carte-osm.osm")
+  (println (hw1.allstar/a-star omap :n2 :n3 heurist1))
 
   )
