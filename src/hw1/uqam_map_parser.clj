@@ -14,16 +14,25 @@
           lng2 (* to-lng rad-deg-ratio)
           lat1 (* from-lat rad-deg-ratio)
           lat2 (* to-lat rad-deg-ratio)]
-      (let [s1 (Math/sin (/ (- lat2 lat1) 2))
-            s2 (Math/sin (/ (- lng2 lng1) 2))]
-        (* twice-earth-radius (Math/asin (Math/sqrt (+ (Math/pow s1 2) (* (Math/cos lat1) (Math/cos lat2) (Math/pow s2 2))))))))))
+      (let [s2 (Math/sin (/ (- lat2 lat1) 2))
+            s1 (Math/sin (/ (- lng2 lng1) 2))]
+        (*
+          twice-earth-radius
+          (Math/asin
+            (Math/sqrt
+              (+
+                (Math/pow s1 2)
+                (*
+                  (Math/cos lat1)
+                  (Math/cos lat2)
+                  (Math/pow s2 2))))))))))
 
 
 (defn parse-part-1
   [line-to-parse node-map]
   (let [x (clojure.string/split (clojure.string/replace line-to-parse #"[(),]" "") #" ")]
     (assoc node-map (keyword (x 0))
-           {:geo [(Float/parseFloat (x 1)) (Float/parseFloat (x 2))]})))
+                    {:geo [(Float/parseFloat (x 1)) (Float/parseFloat (x 2))]})))
 
 (defn parse-part-2
   [line-to-parse node-map]
@@ -36,8 +45,8 @@
                  (assoc ret-map
                    (keyword (first elements))
                    (if (target-node :dest)
-                    (assoc target-node :dest (cons kw-to-add (target-node :dest)))
-                    (assoc target-node :dest [kw-to-add]))))
+                     (assoc target-node :dest (cons kw-to-add (target-node :dest)))
+                     (assoc target-node :dest [kw-to-add]))))
                (rest elements))))))
 
 (defn parse-map
@@ -51,7 +60,7 @@
         (if (= (first rdr) "---")
           (recur (rest rdr) 2 node-map)
           (if (= 1 file-part)
-           (recur (rest rdr) 1 (parse-part-1 (first rdr) node-map))
-           (recur (rest rdr) 2 (parse-part-2 (first rdr) node-map)))))))
+            (recur (rest rdr) 1 (parse-part-1 (first rdr) node-map))
+            (recur (rest rdr) 2 (parse-part-2 (first rdr) node-map)))))))
 
-)
+  )
