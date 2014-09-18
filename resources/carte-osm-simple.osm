@@ -17,19 +17,21 @@
   <node id="12" lat="3" lon="2" version="2" timestamp="2010-11-07T19:59:51Z" changeset="6315395" uid="4786" user="Romain Aviolat [Xens]"/>
 
   <way id="1" version="10" timestamp="2011-11-22T11:40:01Z" changeset="9907959" uid="225842" user="schnelli">
-    <nd ref="4"/>
-    <nd ref="3"/>
-    <nd ref="2"/>
     <nd ref="1"/>
+    <nd ref="2"/>
+    <nd ref="3"/>
+    <nd ref="4"/>
     <tag k="highway" v="unclassified"/>
+    <tag k="oneway" v="-1"/>
     <tag k="name" v="Avenue Genéral-Guisan"/>
   </way>
   <way id="2" version="2" timestamp="2013-07-19T12:19:55Z" changeset="17011271" uid="84054" user="fredjunod">
-    <nd ref="8"/>
-    <nd ref="7"/>
-    <nd ref="6"/>
     <nd ref="5"/>
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <nd ref="8"/>
     <tag k="highway" v="service"/>
+    <tag k="oneway" v="1"/>
     <tag k="service" v="alley"/>
   </way>
   <way id="3" version="4" timestamp="2011-11-22T11:40:02Z" changeset="9907959" uid="225842" user="schnelli">
@@ -50,13 +52,5 @@
     <tag k="name" v="Rue du Mont-Tendre"/>
     <tag k="service" v="driveway"/>
   </way>
-  <relation id="1555792" version="3" timestamp="2011-04-27T09:31:53Z" changeset="7983176" uid="17835" user="Stéphane Brunner">
-    <member type="way" ref="61500281" role="outer"/>
-    <member type="way" ref="110519083" role="outer"/>
-    <member type="way" ref="109921778" role="outer"/>
-    <tag k="landuse" v="residential"/>
-    <tag k="name" v="Yverdon-les-Bains"/>
-    <tag k="type" v="multipolygon"/>
-  </relation>
 
 </osm>
