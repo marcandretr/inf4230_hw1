@@ -8,14 +8,18 @@
   [graph opened closed parents goal fheuristic]
   (if (= ((peek opened) 0) goal)
     ; Todo: Walk back the parent map.
-    parents
+    (loop [current-parent (parents goal) final-path [goal]]
+      (if current-parent
+        (recur (parents (current-parent 0)) (cons (current-parent 0) final-path))
+        (rest final-path)
+      ))
 
     (let [[new-opened new-parents]
           (reduce
             ; The reduce function
             (fn [[op-map par-map] dest-kw-hrt]
               (if (and
-                    (not (get closed (dest-kw-hrt 0)))
+                    (not (closed (dest-kw-hrt 0)))
                     (or
                       ; The open pmap does not contain
                       (not (contains? op-map (dest-kw-hrt 0)))
@@ -35,7 +39,7 @@
                       ) :dest)]
               [dest
                (+
-                 (fheuristic)
+                 (fheuristic (graph ((peek opened) 0)) (graph dest))
                  ((graph :move-cost)
                   (graph ((peek opened) 0))
                   (graph dest)
@@ -47,7 +51,7 @@
         ; Return back the graph
         graph
         new-opened
-        (cons (peek opened) closed)
+        (assoc closed ((peek opened) 0) ((peek opened) 0)  )
         new-parents
         goal
         fheuristic))))
