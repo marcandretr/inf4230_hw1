@@ -3,11 +3,12 @@
 
 ; You can also call it A*
 
-
 (defn- a-star-inner
   [graph opened closed parents goal fheuristic visited-states]
+  ; Parents should be stored in the node as a linked list
+  ; When you drop a node, his parent chain is dropped automatically instead of keeping a map of parents
   (if (= ((peek opened) 0) goal)
-    ; Todo: Walk back the parent map.
+    ; Walk back the parent map.
     (do
       ; Todo Bench
       (println (format "# Generated states: %s" (count parents)))

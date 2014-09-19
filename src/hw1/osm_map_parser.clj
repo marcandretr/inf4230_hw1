@@ -40,7 +40,9 @@
                                       nil))
                                   (:content element))
 
+                        ; Determine the direction of the way (1: one way, 0: two way, -1: reverse one way)
                         (let [way-direction
+                              ; if we dont check for one way, the default is 2 way i.e. 0 in our representation
                               (if check-one-way
                                 (let [accepted-values {"yes" 1 "true" 1 "1" 1 "-1" -1 "reverse" -1}]
                                   (let [way-node (first (filter #(contains?
@@ -54,11 +56,13 @@
                                     0))
                                   )
                                 0)]
+                          ; for each nodes "nd" in "way" node
                           (loop [nodes (filter #(= (:tag %) :nd) (:content element))
                                  ret-node-map node-map
                                  ret-nodes-in-way nodes-in-way]
                             (if (= (count nodes) 1)
                               [ret-node-map ret-nodes-in-way]
+                              ; define the first and second nd with their keywords and the corresponding nodes from map
                               (let [nd1 (first nodes)
                                     nd2 (second nodes)]
                                 (let [kw1 (keyword (str "n" (:ref (:attrs nd1))))
@@ -67,24 +71,29 @@
                                         target-node2 (ret-node-map kw2)]
                                     (cond
                                       (= way-direction 1) (recur (rest nodes)
+                                                                 ; add the kw2 to node 1's destinations
                                                                  (assoc ret-node-map
                                                                    kw1
                                                                    (if (:dest target-node1)
                                                                      (assoc target-node1 :dest (cons kw2 (target-node1 :dest)))
                                                                      (assoc target-node1 :dest [kw2])))
+                                                                 ; add kw1 and kw2 to nodes that are in ways
                                                                  (assoc (assoc ret-nodes-in-way
                                                                           kw2 true)
                                                                    kw1 true))
                                       (= way-direction -1) (recur (rest nodes)
+                                                                  ; add the kw1 to node 2's destinations
                                                                   (assoc ret-node-map
                                                                     kw2
                                                                     (if (:dest target-node2)
                                                                       (assoc target-node2 :dest (cons kw1 (target-node2 :dest)))
                                                                       (assoc target-node2 :dest [kw1])))
+                                                                  ; add kw1 and kw2 to nodes that are in ways
                                                                   (assoc (assoc ret-nodes-in-way
                                                                            kw2 true)
                                                                     kw1 true))
                                       :else (recur (rest nodes)
+                                                   ; add the kw2 to node 1's destinations and the kw2 to node 1's destinations
                                                    (assoc
                                                        (assoc ret-node-map
                                                          kw1
@@ -95,6 +104,7 @@
                                                      (if (:dest target-node2)
                                                        (assoc target-node2 :dest (cons kw1 (target-node2 :dest)))
                                                        (assoc target-node2 :dest [kw1])))
+                                                   ; add kw1 and kw2 to nodes that are in ways
                                                    (assoc (assoc ret-nodes-in-way
                                                             kw2 true)
                                                      kw1 true))

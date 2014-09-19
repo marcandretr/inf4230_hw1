@@ -8,7 +8,7 @@
   "I don't do a whole lot ... yet."
   [& args]
 
-  (let [heurist (fn [from to] (hw1.uqam_map_parser/cost-of-move from to))
+  (let [heurist hw1.uqam_map_parser/cost-of-move
         start-time (System/currentTimeMillis)]
 
     (let [ans (hw1.allstar/a-star
