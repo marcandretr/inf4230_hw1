@@ -1,5 +1,6 @@
 (ns hw1.allstar
-  (:require clojure.data.priority-map))
+  (:require clojure.data.priority-map)
+  (:gen-class))
 
 ; You can also call it A*
 
@@ -11,7 +12,7 @@
     ; Walk back the parent map.
     (do
       ; Todo Bench
-      (println (format "# Generated states: %s" (count parents)))
+      (println (format "# Generated states: %s" (+ (count parents))))
       (println (format "# Visited states: %s" visited-states))
       ; Reverse the path
       (loop [current-parent (parents goal) final-path [goal]]
@@ -31,7 +32,7 @@
                     (or
                       ; The open pmap does not contain
                       (not (contains? op-map (dest-kw-hrt 0)))
-                      (> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1))
+                      ;(> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1))
                        ))
                 ; Return the new maps
                 [(assoc op-map (dest-kw-hrt 0) (dest-kw-hrt 1))
@@ -50,12 +51,14 @@
                (+
                  (fheuristic (graph ((peek opened) 0)) (graph dest))
                  ((graph :move-cost)
-                  (graph ((peek opened) 0))
                   (graph dest)
-                  ))]
+                  (graph goal)
+                 )
+                 )]
 
               ))]
-
+      (do
+        ;(println "# Visited" ((peek opened) 0))
       (recur
         ; Return back the graph
         graph
@@ -64,7 +67,7 @@
         new-parents
         goal
         fheuristic
-        (inc visited-states)))))
+        (inc visited-states))))))
 
 
 (defn a-star

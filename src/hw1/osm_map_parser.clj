@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.data.xml :as xml]
             [clojure.zip :as zip]
-            [hw1.uqam_map_parser :as map]))
+            [hw1.uqam_map_parser :as map])
+  (:gen-class))
 
 (defn parse-map
   "Parses file and outputs the node structure"

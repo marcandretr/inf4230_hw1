@@ -1,6 +1,7 @@
 (ns hw1.sokoban-parser
   (:require [swiss.arrows :refer :all]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:gen-class))
 
 (defn sobomap-to-vecs
   "Parses sokoban file and outputs a vector of vectors"

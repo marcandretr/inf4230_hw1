@@ -11,5 +11,6 @@
   :main ^:skip-aot hw1.core
   :java-source-paths ["src-java"]
   :target-path "target/%s"
+  :omit-source true
   :profiles {:uberjar {:aot :all}})
 

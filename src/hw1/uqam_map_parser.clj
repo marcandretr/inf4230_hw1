@@ -39,7 +39,7 @@
   (let [x (clojure.string/split (clojure.string/replace line-to-parse #"[;:]" "") #"\s+")]
     (loop [ret-map node-map elements (rest x)]
       (if (= (count elements) 1)
-        ret-map
+        [ret-map (-> x rest count)]
         (recur (let [target-node (ret-map (keyword (first elements)))
                      kw-to-add (keyword (second elements))]
                  (assoc ret-map
@@ -54,15 +54,21 @@
   [file-name]
   (with-open [reader (io/reader file-name)]
 
-    (loop [rdr (line-seq reader) file-part 1 node-map {}]
+    (loop [rdr (line-seq reader)
+           file-part 1
+           node-map {}
+           ways 0
+           segments 0
+           ]
       (if (empty? rdr)
         (do
-          (println (format "# Nodes: %s" (count node-map)))
+          (println (format "# Nodes: %s | Ways: %s | Segs: %s" (count node-map) ways segments))
           (assoc node-map :move-cost cost-of-move))
         (if (= (first rdr) "---")
-          (recur (rest rdr) 2 node-map)
+          (recur (rest rdr) 2 node-map ways segments)
           (if (= 1 file-part)
-            (recur (rest rdr) 1 (parse-part-1 (first rdr) node-map))
-            (recur (rest rdr) 2 (parse-part-2 (first rdr) node-map)))))))
+            (recur (rest rdr) 1 (parse-part-1 (first rdr) node-map) segments ways)
+            (let [[int-nodes-map acc-segs] (parse-part-2 (first rdr) node-map)]
+              (recur (rest rdr) 2 int-nodes-map (inc ways) (+ segments acc-segs))))))))
 
   )

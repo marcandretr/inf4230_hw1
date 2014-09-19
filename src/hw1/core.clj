@@ -6,7 +6,7 @@
 
 (defn -main
   "I don't do a whole lot ... yet."
-  [& args]
+  [start-kw end-kw]
 
   (let [heurist hw1.uqam_map_parser/cost-of-move
         start-time (System/currentTimeMillis)]
@@ -14,7 +14,19 @@
     (let [ans (hw1.allstar/a-star
                 (hw1.uqam_map_parser/parse-map "resources/uqam-map-1.txt")
                 :n1
-                :n10
+                :n8
+                heurist)]
+      (println (format "# Elapsed time: %s ms" (- (System/currentTimeMillis) start-time)))
+      ans
+      ))
+
+  (let [heurist hw1.uqam_map_parser/cost-of-move
+        start-time (System/currentTimeMillis)]
+
+    (let [ans (hw1.allstar/a-star
+                (hw1.uqam_map_parser/parse-map "resources/uqam-map-1.txt")
+                :n1
+                :n8
                 heurist)]
       (println (format "# Elapsed time: %s ms" (- (System/currentTimeMillis) start-time)))
       ans
