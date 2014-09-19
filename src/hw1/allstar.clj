@@ -23,7 +23,8 @@
                     (or
                       ; The open pmap does not contain
                       (not (contains? op-map (dest-kw-hrt 0)))
-                      (> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1))))
+                      ; (> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1))
+                       ))
                 ; Return the new maps
                 [(assoc op-map (dest-kw-hrt 0) (dest-kw-hrt 1))
                  (assoc par-map (dest-kw-hrt 0) (peek opened))]
