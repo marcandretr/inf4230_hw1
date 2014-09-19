@@ -56,7 +56,9 @@
 
     (loop [rdr (line-seq reader) file-part 1 node-map {}]
       (if (empty? rdr)
-        (assoc node-map :move-cost cost-of-move)
+        (do
+          (println (format "# Nodes: %s" (count node-map)))
+          (assoc node-map :move-cost cost-of-move))
         (if (= (first rdr) "---")
           (recur (rest rdr) 2 node-map)
           (if (= 1 file-part)

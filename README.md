@@ -4,13 +4,13 @@ FIXME: description
 
 ## Installation
 
-Download from http://example.com/FIXME.
+`$ lein uberjar`
 
 ## Usage
 
 FIXME: explanation
 
-    $ java -jar hw1-0.1.0-standalone.jar [args]
+    `$ time sudo nice --20 java -Xmx2g -XX:+AggressiveOpts -jar target/uberjar/hw1-0.0.1-standalone.jar`
 
 ## Options
 

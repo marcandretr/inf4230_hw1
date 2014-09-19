@@ -5,15 +5,22 @@
 
 
 (defn- a-star-inner
-  [graph opened closed parents goal fheuristic]
+  [graph opened closed parents goal fheuristic visited-states]
   (if (= ((peek opened) 0) goal)
     ; Todo: Walk back the parent map.
-    (loop [current-parent (parents goal) final-path [goal]]
-      (if current-parent
-        (recur (parents (current-parent 0)) (cons (current-parent 0) final-path))
-        (rest final-path)
-      ))
+    (do
+      ; Todo Bench
+      (println (format "# Generated states: %s" (count parents)))
+      (println (format "# Visited states: %s" visited-states))
+      ; Reverse the path
+      (loop [current-parent (parents goal) final-path [goal]]
+        (if current-parent
+          (recur (parents (current-parent 0)) (cons (current-parent 0) final-path))
+          (rest final-path)
+          ))
+      )
 
+    ; If goal is not the least expensive option
     (let [[new-opened new-parents]
           (reduce
             ; The reduce function
@@ -23,7 +30,7 @@
                     (or
                       ; The open pmap does not contain
                       (not (contains? op-map (dest-kw-hrt 0)))
-                      ; (> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1))
+                      (> (op-map (dest-kw-hrt 0)) (dest-kw-hrt 1))
                        ))
                 ; Return the new maps
                 [(assoc op-map (dest-kw-hrt 0) (dest-kw-hrt 1))
@@ -55,7 +62,8 @@
         (assoc closed ((peek opened) 0) ((peek opened) 0)  )
         new-parents
         goal
-        fheuristic))))
+        fheuristic
+        (inc visited-states)))))
 
 
 (defn a-star
@@ -66,6 +74,8 @@
     {}
     {}
     end-node
-    fheuristic))
+    fheuristic
+    0 ; Visited states
+    ))
 
 
