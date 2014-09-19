@@ -42,7 +42,7 @@
           (recur
             (cond
               (= (second (first line)) :spce) ; How cute: a new node!
-                (assoc sobograph-inner
+                (assoc sobograph-inner ; Todo: Check adjacent matrix cells and build dests.
                     (keyword (format "%d-%d" ((first lines) 0) (first (first line)))) 1)
               (= (second (first line)) :goal) sobograph-inner
               (= (second (first line)) :blck) sobograph-inner
