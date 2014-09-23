@@ -12,6 +12,7 @@
         start-time (System/currentTimeMillis)]
 
     (let [ans (hw1.allstar/a-star
+                'hw1.uqam_map_parser
                 (hw1.uqam_map_parser/parse-map "resources/uqam-map-1.txt")
                 :n1
                 :n8

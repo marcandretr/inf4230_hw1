@@ -117,14 +117,8 @@
                                     new-opened
                                     new-closed
                                     new-states)]
-
           (recur
             (rest possible-destinations)
             ret-opened
             ret-closed
-            ret-states
-            )))
-
-      )
-
-    ))
+            ret-states))))))
