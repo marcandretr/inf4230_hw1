@@ -7,39 +7,38 @@
 (defn cost-of-move
   [world from to]
   (let [from (world from)
-        to (world to)]
-    (let [[from-lng from-lat] (from :geo)
-          [to-lng to-lat] (to :geo)
-          rad-deg-ratio (/ (Math/PI) 180)
-          twice-earth-radius 12742000]
+        to (world to)
+        [from-lat from-lng] (from :geo)
+        [to-lat to-lng] (to :geo)
+        rad-deg-ratio (/ (Math/PI) 180)
+        twice-earth-radius 12742000
+        lng1 (/ (* from-lng Math/PI) 180)
+        lng2 (/ (* to-lng Math/PI) 180)
+        lat1 (/ (* from-lat Math/PI) 180)
+        lat2 (/ (* to-lat Math/PI) 180)
+        s1 (Math/sin (/ (- lat2 lat1) 2))
+        s2 (Math/sin (/ (- lng2 lng1) 2))]
 
-      (let [lng1 (* from-lng rad-deg-ratio)
-            lng2 (* to-lng rad-deg-ratio)
-            lat1 (* from-lat rad-deg-ratio)
-            lat2 (* to-lat rad-deg-ratio)]
-        (let [s2 (Math/sin (/ (- lat2 lat1) 2))
-              s1 (Math/sin (/ (- lng2 lng1) 2))]
-          (*
-            twice-earth-radius
-            (Math/asin
-              (Math/sqrt
-                (+
-                  (Math/pow s1 2)
-                  (*
-                    (Math/cos lat1)
-                    (Math/cos lat2)
-                    (Math/pow s2 2)))))))))))
+    (* twice-earth-radius
+       (Math/asin
+         (Math/sqrt
+           (+
+             (Math/pow s1 2)
+             (*
+               (Math/cos lat1)
+               (Math/cos lat2)
+               (Math/pow s2 2))))))))
 
 
 (defn parse-part-1
   [line-to-parse node-map]
-  (let [x (clojure.string/split (clojure.string/replace line-to-parse #"[(),]" "") #" ")]
+  (let [x (clojure.string/split (clojure.string/replace line-to-parse #"[(),]" " ") #"\s+")]
     (assoc node-map (keyword (x 0))
                     {:geo [(Float/parseFloat (x 1)) (Float/parseFloat (x 2))]})))
 
 (defn parse-part-2
   [line-to-parse node-map]
-  (let [x (clojure.string/split (clojure.string/replace line-to-parse #"[;:]" "") #"\s+")]
+  (let [x (clojure.string/split (clojure.string/replace line-to-parse #"[;:]" " ") #"\s+")]
     (loop [ret-map node-map elements (rest x)]
       (if (= (count elements) 1)
         [ret-map (-> x rest count)]
@@ -51,6 +50,56 @@
                      (assoc target-node :dest (cons kw-to-add (target-node :dest)))
                      (assoc target-node :dest [kw-to-add]))))
                (rest elements))))))
+
+(defn- generate-one-state
+  [child-key child-f child-g parent-key opened closed states]
+  (cond (or
+          (and
+            (opened child-key)
+            (> (opened child-key) child-f))
+          (not (closed child-key))
+          )
+        [(assoc opened child-key child-f)
+         closed
+         (assoc states child-key {:g child-g :parent parent-key})]
+
+        (and (closed child-key) (> (closed child-key) child-f))
+        [(assoc opened child-key child-f)
+         (dissoc closed child-key)
+         (assoc states child-key {:g child-g :parent parent-key})]
+
+        :else
+        [opened closed states]))
+
+(defn generate-new-states
+  "Finds the new childrens and their cost"
+  [world states opened closed goal]
+  (let [parent-state-key ((first opened) 0)]
+    (loop [possible-destinations ((world parent-state-key) :dest)
+           new-opened opened
+           new-closed closed
+           new-states states]
+      (if (empty? possible-destinations)
+        [(dissoc new-opened parent-state-key)
+         (assoc new-closed parent-state-key (new-opened parent-state-key))
+         new-states]
+
+        (let [current-child-g (+ ((states parent-state-key) :g)
+                                 (cost-of-move world parent-state-key (first possible-destinations)))]
+          (let [[ret-opened ret-closed ret-states]
+                (generate-one-state (first possible-destinations)
+                                    (+ current-child-g (cost-of-move world (first possible-destinations) goal))
+                                    current-child-g
+                                    parent-state-key
+                                    new-opened
+                                    new-closed
+                                    new-states)]
+            (recur
+              (rest possible-destinations)
+              ret-opened
+              ret-closed
+              ret-states)))))))
+
 
 (defn parse-map
   "Parses file and outputs the node structure"
@@ -66,7 +115,7 @@
       (if (empty? rdr)
         (do
           (println (format "# Nodes: %s | Ways: %s | Segs: %s" (count node-map) ways segments))
-          (assoc node-map :move-cost cost-of-move))
+          (assoc node-map :gen-children-states generate-new-states))
         (if (= (first rdr) "---")
           (recur (rest rdr) 2 node-map ways segments)
           (if (= 1 file-part)
@@ -76,49 +125,4 @@
 
   )
 
-(defn- generate-one-state
-  [child-key child-f child-g parent-key opened closed states]
-  (cond (or
-          (and
-            (opened child-key)
-            (> ((opened child-key) :f) child-f))
-          (not (closed child-key))
-          )
-        [(assoc opened child-key child-f)
-         closed
-         (assoc states child-key {:g child-g :parent parent-key})]
 
-        (and (closed child-key) (> ((closed child-key) :f) child-f))
-        [(assoc opened child-key child-f)
-         (dissoc closed child-key)
-         (assoc states child-key {:g child-g :parent parent-key})]
-
-        :else
-        [opened closed states]))
-
-(defn generate-new-states
-  "Finds the new childrens and their cost"
-  [world states parent-state-key opened closed goal]
-
-  (loop [possible-destinations (-<> (parent-state-key :position) ((world <>) :dest))
-         new-opened opened
-         new-closed closed
-         new-states states]
-    (if (empty? possible-destinations)
-      [new-opened new-closed new-states]
-
-      (let [current-child-g (+ ((states parent-state-key) :g)
-                               (cost-of-move world parent-state-key (first possible-destinations)))]
-        (let [[ret-opened ret-closed ret-states]
-                (generate-one-state (first possible-destinations)
-                                    (+ current-child-g (cost-of-move world (first possible-destinations) goal))
-                                    current-child-g
-                                    parent-state-key
-                                    new-opened
-                                    new-closed
-                                    new-states)]
-          (recur
-            (rest possible-destinations)
-            ret-opened
-            ret-closed
-            ret-states))))))

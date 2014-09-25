@@ -8,15 +8,15 @@
   "I don't do a whole lot ... yet."
   [start-kw end-kw]
 
-  (let [heurist hw1.uqam_map_parser/cost-of-move
+  (let [ skw (keyword start-kw)
+         ekw (keyword end-kw)
+         map (hw1.uqam_map_parser/parse-map "resources/carte-montreal.txt")
         start-time (System/currentTimeMillis)]
 
     (let [ans (hw1.allstar/a-star
-                'hw1.uqam_map_parser
-                (hw1.uqam_map_parser/parse-map "resources/uqam-map-1.txt")
-                :n1
-                :n8
-                heurist)]
+                map
+                skw
+                ekw)]
       (println (format "# Elapsed time: %s ms" (- (System/currentTimeMillis) start-time)))
       ans))
 
