@@ -1,5 +1,5 @@
 (ns hw1.sokoban-parser
-  (:require [swiss.arrows :refer :all]
+  (:require
             [clojure.java.io :as io])
   (:gen-class))
 
@@ -29,7 +29,7 @@
 
     ))
 
-(defn parse-map
+(defn parse-map-beta
   [file-name]
   (loop [sobograph {}
          lines (map-indexed vector (sobomap-to-vecs file-name))] ; Line iteration
@@ -57,3 +57,50 @@
       )
 
         ))
+
+(defn generate-long-from-chunk
+  [chunk]
+    (reduce
+      (fn
+        [number ch]
+        (bit-or (bit-shift-left number 1) (if (= \# ch) 2r1 0)))
+      (long 0) chunk))
+
+(defn generate-longvec-from-line
+  [line]
+  (let [chunk-size 64]
+  (loop [line-chunks (partition chunk-size chunk-size (vec (repeat (dec chunk-size) \space)) line)
+         longvec []]
+    (if (empty? line-chunks)
+      longvec
+      (recur
+        (rest line-chunks)
+        (conj longvec (generate-long-from-chunk (first line-chunks)))))
+
+    )
+  ))
+
+(defn parse-map
+  [file-name]
+  (with-open [reader (io/reader file-name)]
+    (loop [rdr (line-seq reader)
+           started-to-read false
+           map-longvec []
+           dude-pos []
+           blocks-pos []
+           ]
+      (if (empty? rdr)
+        map-longvec
+        (recur
+          (rest rdr)
+          true
+          (conj map-longvec (generate-longvec-from-line (first rdr)))
+          dude-pos
+          blocks-pos
+          )
+
+        ))
+
+    )
+
+  )
