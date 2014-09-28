@@ -8,6 +8,8 @@
                  [org.clojure/data.xml "0.0.8"]
                  [criterium "0.4.3"]
                  [swiss-arrows "1.0.0"]]
+  :plugins [[codox "0.8.10"]]
+  :codox {:defaults {:doc/format :markdown}}
   :main ^:skip-aot hw1.core
   :java-source-paths ["src-java"]
   :target-path "target/%s"
