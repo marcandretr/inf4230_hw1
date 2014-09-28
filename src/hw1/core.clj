@@ -1,7 +1,8 @@
 (ns hw1.core
   (:require hw1.uqam_map_parser
             hw1.osm_map_parser
-            hw1.allstar)
+            hw1.allstar
+            hw1.sokoban_parser)
   (:gen-class))
 
 (defn -main

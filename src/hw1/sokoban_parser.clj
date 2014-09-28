@@ -5,18 +5,24 @@
 
 (defmacro BLOCK-SIZE [] 64)
 
-(defn is-walkable
+(defn position-has-wall
+  "Returns 1 if there is a block at the requested position
+  Otherwise returns 0"
   [world
    [x y]]
   (let [linevec (world y)
         block (quot x (BLOCK-SIZE))
         idx-in-block (- x (* (BLOCK-SIZE) block))]
-    (-> idx-in-block block linevec)
+    (bit-and (bit-shift-right (linevec block) (- (dec (BLOCK-SIZE)) idx-in-block)) 1)))
 
-    )
-
-  )
-
+(defn position-is-occupied
+  [world
+   [_ block-set]
+   position]
+    (or
+      (block-set position)
+      (position-has-wall world position)))
+l
 (defn generate-long-from-chunk
   [chunk]
     (reduce
