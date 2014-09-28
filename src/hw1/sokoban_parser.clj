@@ -1,9 +1,16 @@
 (ns hw1.sokoban-parser
-  (:require
-            [clojure.java.io :as io])
+  (:require [clojure.java.io :as io])
   (:gen-class))
 
 (defmacro BLOCK-SIZE [] 64)
+
+; Snippet from http://stackoverflow.com/a/3266877/2332936
+(defn re-pos [re s]
+  (loop [m (re-matcher re s)
+         res []]
+    (if (.find m)
+      (recur m (conj res (.start m)))
+      res)))
 
 (defn is-walkable
   [world
@@ -25,41 +32,59 @@
         (bit-or (bit-shift-left number 1) (if (= \# ch) 2r1 0)))
       (long 0) chunk))
 
+(defn find-dude-pos
+  [[line-num line] dude-pos]
+  (let [char-index (.indexOf line "@")]
+    (if (= char-index -1)
+      dude-pos
+      [char-index line-num]
+      )))
+
+(defn find-pos
+  [line-num line blocks-pos symbol-regex]
+  (reduce #(conj %1 (vec [%2 line-num])) blocks-pos (hw1.sokoban-parser/re-pos symbol-regex line)))
+
+(defn find-blocks-pos
+  [[line-num line] blocks-pos]
+  (find-pos line-num line blocks-pos #"\$"))
+
+(defn find-goals-pos
+  [[line-num line] goals-pos]
+  (find-pos line-num line goals-pos #"\."))
+
 (defn generate-longvec-from-line
   [line]
   (let [chunk-size 64]
-  (loop [line-chunks (partition chunk-size chunk-size (vec (repeat (dec chunk-size) \space)) line)
-         longvec []]
-    (if (empty? line-chunks)
-      longvec
-      (recur
-        (rest line-chunks)
-        (conj longvec (generate-long-from-chunk (first line-chunks)))))
+    (loop [line-chunks (partition chunk-size chunk-size (vec (repeat (dec chunk-size) \space)) line)
+           longvec []]
+      (if (empty? line-chunks)
+        longvec
+        (recur
+          (rest line-chunks)
+          (conj longvec (generate-long-from-chunk (first line-chunks))))))))
 
-    )
-  ))
+(defn generate-new-states
+  []
+  )
 
 (defn parse-map
   [file-name]
   (with-open [reader (io/reader file-name)]
-    (loop [rdr (line-seq reader)
+    (loop [rdr (map-indexed vector (line-seq reader))
            started-to-read false
            map-longvec []
            dude-pos []
-           blocks-pos []
-           ]
+           blocks-pos (sorted-set)
+           goals-pos (sorted-set)]
       (if (empty? rdr)
-        map-longvec
-        (recur
-          (rest rdr)
-          true
-          (conj map-longvec (generate-longvec-from-line (first rdr)))
-          dude-pos
-          blocks-pos
-          )
-
-        ))
-
-    )
-
-  )
+        {:world {:map map-longvec :gen-children-states generate-new-states} :first-state [dude-pos blocks-pos] :goal goals-pos}
+        (let [line (first rdr)]
+          (recur
+            (rest rdr)
+            true
+            (conj map-longvec (generate-longvec-from-line (second (first rdr))))
+            (if (empty? dude-pos)
+              (find-dude-pos line dude-pos)
+              dude-pos)
+            (find-blocks-pos line blocks-pos)
+            (find-goals-pos line goals-pos)))))))
