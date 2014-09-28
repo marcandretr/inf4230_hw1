@@ -8,9 +8,9 @@
   "I don't do a whole lot ... yet."
   [start-kw end-kw]
 
-  (let [ skw (keyword start-kw)
-         ekw (keyword end-kw)
-         map (hw1.uqam_map_parser/parse-map "resources/carte-montreal.txt")
+  (let [skw (keyword start-kw)
+        ekw (keyword end-kw)
+        map (hw1.uqam_map_parser/parse-map "resources/carte-montreal.txt")
         start-time (System/currentTimeMillis)]
 
     (let [ans (hw1.allstar/a-star
