@@ -29,6 +29,6 @@
   ;(println (hw1.allstar/a-star omap :n2 :n3 heurist1))
 
   (def a (hw1.sokoban-parser/parse-map map-path))
-  (hw1.allstar/a-star (a :world) (a :first-state) (a :goal) hw1.sokoban-parser/heuristic-1)
+  (((a :world) :printer) (hw1.allstar/a-star (a :world) (a :first-state) (a :goal) hw1.sokoban-parser/heuristic-1))
 
   )

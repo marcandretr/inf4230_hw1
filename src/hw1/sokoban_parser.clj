@@ -24,6 +24,63 @@
 (defn heuristic-1 [world state goal]
   1)
 
+(defn- block-is-dead?
+  "Returns true if block is in a dead spot"
+  [world state goal]
+
+
+  )
+
+(defn- deadlocks?
+  "Returns true if there is a deadlock; otherwise false"
+  [world state goal]
+
+  )
+
+(defn- manathan-distance
+  "Returns the manathan distance between 2 cells"
+  [[x1 y1]
+  [x2 y2]]
+
+  (+ (- x2 x1) (- y2 y1)))
+
+(defn- m-distance-to-closest-goal
+  [position
+   goals]
+
+
+
+  )
+
+(defn- m-distance-closest-block
+  [[dude blocks :as state] goal]
+
+  (map #() blocks)
+
+  )
+
+(defn heuristic [world state goal]
+  ; Deadlocks
+  ;
+  )
+
+
+(defn- find-cardinal-point
+  [[x1 y1]
+   [x2 y2]]
+  [(- x2 x1) (- y2 y1)]
+
+  (cond
+    (> y2 y1) "S"
+    (< y2 y1) "N"
+    (> x2 x1) "E"
+    (< x2 x1) "W"))
+
+(defn print-solution [states-seq]
+  (when (not= (second states-seq) nil)
+    (print (find-cardinal-point (-> states-seq first first) (-> states-seq second first)) "")
+    (recur (rest states-seq))))
+
 (defn position-has-wall
   [{world :map}
    [x y]]
@@ -109,15 +166,7 @@
                  (fn [[x y]] [x (inc y)])
                  (fn [[x y]] [x (dec y)])]
         :when (is-valid-move world state move-fn)]
-    move-fn)
-
-  ;(filter (fn [move-fn] (is-valid-move world state move-fn))
-  ;        [(fn [[x y]] [(inc x) y])
-  ;         (fn [[x y]] [(dec x) y])
-  ;         (fn [[x y]] [x (inc y)])
-  ;         (fn [[x y]] [x (dec y)])])
-
-  )
+    move-fn))
 
 (defn generate-new-state-from-transform
   "Returns a new state assuming that the transform given opens on a valid state."
@@ -203,7 +252,8 @@
         {:world       {:map                 map-longvec
                        :cost-of-move        cost-of-move
                        :gen-children-states generate-new-states
-                       :goal-satisfied?     goal-satisfied?}
+                       :goal-satisfied?     goal-satisfied?
+                       :printer print-solution}
          :first-state [dude-pos blocks-pos]
          :goal        goals-pos}
         (let [line (first rdr)]

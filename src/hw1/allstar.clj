@@ -20,7 +20,7 @@
       (loop [current-parent (states (-> opened first first)) final-path [(-> opened first first)]]
         (if current-parent
           (recur (states (current-parent :parent)) (cons (current-parent :parent) final-path))
-          (rest (rest final-path))
+          (rest final-path)
           ))
       ))
 
