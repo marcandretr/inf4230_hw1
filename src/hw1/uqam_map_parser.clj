@@ -6,8 +6,9 @@
 
 (defn cost-of-move
   [world from to]
-  (let [from (world from)
-        to (world to)
+  (let [world-map (world :map)
+        from (world-map from)
+        to (world-map to)
         [from-lat from-lng] (from :geo)
         [to-lat to-lng] (to :geo)
         rad-deg-ratio (/ (Math/PI) 180)
@@ -34,7 +35,7 @@
   [line-to-parse node-map]
   (let [x (clojure.string/split (clojure.string/replace line-to-parse #"[(),]" " ") #"\s+")]
     (assoc node-map (keyword (x 0))
-                    {:geo [(Float/parseFloat (x 1)) (Float/parseFloat (x 2))]})))
+                    {:geo [(Double/parseDouble (x 1)) (Double/parseDouble (x 2))]})))
 
 (defn parse-part-2
   [line-to-parse node-map]
@@ -51,55 +52,65 @@
                      (assoc target-node :dest [kw-to-add]))))
                (rest elements))))))
 
-(defn- generate-one-state
-  [child-key child-f child-g parent-key opened closed states]
-  (cond (or
-          (and
-            (opened child-key)
-            (> (opened child-key) child-f))
-          (not (closed child-key))
-          )
-        [(assoc opened child-key child-f)
-         closed
-         (assoc states child-key {:g child-g :parent parent-key})]
+;(defn- generate-one-state
+;  [child-key child-f child-g parent-key opened closed states]
+;  (cond (or
+;          (and
+;            (opened child-key)
+;            (> (opened child-key) child-f))
+;          (not (closed child-key))
+;          )
+;        [(assoc opened child-key child-f)
+;         closed
+;         (assoc states child-key {:g child-g :parent parent-key})]
+;
+;        (and (closed child-key) (> (closed child-key) child-f))
+;        [(assoc opened child-key child-f)
+;         (dissoc closed child-key)
+;         (assoc states child-key {:g child-g :parent parent-key})]
+;
+;        :else
+;        [opened closed states]))
 
-        (and (closed child-key) (> (closed child-key) child-f))
-        [(assoc opened child-key child-f)
-         (dissoc closed child-key)
-         (assoc states child-key {:g child-g :parent parent-key})]
+;(defn generate-new-states
+;  "Finds the new childrens and their cost"
+;  [world states opened closed goal]
+;  (let [parent-state-key ((first opened) 0)]
+;    (loop [possible-destinations ((world parent-state-key) :dest)
+;           new-opened opened
+;           new-closed closed
+;           new-states states]
+;      (if (empty? possible-destinations)
+;        [(dissoc new-opened parent-state-key)
+;         (assoc new-closed parent-state-key (new-opened parent-state-key))
+;         new-states]
+;
+;        (let [current-child-g (+ ((states parent-state-key) :g)
+;                                 (cost-of-move world parent-state-key (first possible-destinations)))]
+;          (let [[ret-opened ret-closed ret-states]
+;                (generate-one-state (first possible-destinations)
+;                                    (+ current-child-g (cost-of-move world (first possible-destinations) goal))
+;                                    current-child-g
+;                                    parent-state-key
+;                                    new-opened
+;                                    new-closed
+;                                    new-states)]
+;            (recur
+;              (rest possible-destinations)
+;              ret-opened
+;              ret-closed
+;              ret-states)))))))
 
-        :else
-        [opened closed states]))
+(defn print-solution [states-seq]
+  (if (= (second states-seq) nil)
+    (println)
+    (do
+      (print (second states-seq) "")
+      (recur (rest states-seq)))))
 
-(defn generate-new-states
-  "Finds the new childrens and their cost"
-  [world states opened closed goal]
-  (let [parent-state-key ((first opened) 0)]
-    (loop [possible-destinations ((world parent-state-key) :dest)
-           new-opened opened
-           new-closed closed
-           new-states states]
-      (if (empty? possible-destinations)
-        [(dissoc new-opened parent-state-key)
-         (assoc new-closed parent-state-key (new-opened parent-state-key))
-         new-states]
-
-        (let [current-child-g (+ ((states parent-state-key) :g)
-                                 (cost-of-move world parent-state-key (first possible-destinations)))]
-          (let [[ret-opened ret-closed ret-states]
-                (generate-one-state (first possible-destinations)
-                                    (+ current-child-g (cost-of-move world (first possible-destinations) goal))
-                                    current-child-g
-                                    parent-state-key
-                                    new-opened
-                                    new-closed
-                                    new-states)]
-            (recur
-              (rest possible-destinations)
-              ret-opened
-              ret-closed
-              ret-states)))))))
-
+(defn possible-next-states
+  [world current-state _]
+  (((world :map) current-state) :dest))
 
 (defn parse-map
   "Parses file and outputs the node structure"
@@ -115,14 +126,19 @@
       (if (empty? rdr)
         (do
           (println (format "# Nodes: %s | Ways: %s | Segs: %s" (count node-map) ways segments))
-          (assoc node-map :gen-children-states generate-new-states))
+          {
+            :world {:map                  node-map
+                    :cost-of-move         cost-of-move
+                    :goal-satisfied?      (fn [state goal] (= state goal))
+                    :printer              print-solution
+                    :possible-next-states possible-next-states}
+            }
+          )
         (if (= (first rdr) "---")
           (recur (rest rdr) 2 node-map ways segments)
           (if (= 1 file-part)
             (recur (rest rdr) 1 (parse-part-1 (first rdr) node-map) segments ways)
             (let [[int-nodes-map acc-segs] (parse-part-2 (first rdr) node-map)]
-              (recur (rest rdr) 2 int-nodes-map (inc ways) (+ segments acc-segs))))))))
-
-  )
+              (recur (rest rdr) 2 int-nodes-map (inc ways) (+ segments acc-segs)))))))))
 
 

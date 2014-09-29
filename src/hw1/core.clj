@@ -29,7 +29,14 @@
   ;(println (hw1.allstar/a-star omap :n2 :n3 heurist1))
 
   (def a (hw1.sokoban-parser/parse-map map-path))
-  (((a :world) :printer) (hw1.allstar/a-star (a :world) (a :first-state) (a :goal) hw1.sokoban-parser/heuristic))
+  ;(((a :world) :printer) (hw1.allstar/a-star (a :world) (a :first-state) (a :goal) hw1.sokoban-parser/heuristic))
   (((a :world) :printer) (hw1.allstar/a-star (a :world) (a :first-state) (a :goal) hw1.sokoban-parser/heuristic-1))
+
+  )
+
+(defn uqam-star
+  [map-path]
+  (let [umap (hw1.uqam_map_parser/parse-map map-path)]
+  (((umap :world) :printer) (hw1.allstar/a-star (umap :world) :n1 :n8 hw1.uqam_map_parser/cost-of-move)))
 
   )
