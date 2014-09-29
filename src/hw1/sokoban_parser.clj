@@ -327,38 +327,6 @@
     (partial generate-new-state-from-transform current-state)
     (generate-new-positions world current-state goal)))
 
-
-;(defn generate-new-states
-;  [world
-;   states
-;   opened
-;   closed
-;   goal
-;   heuristic-fn]
-;
-;  (let [current-state (-> opened first first)
-;        ;_ (println (-> opened first second))
-;        ]
-;
-;    (loop [possible-next-states (possible-next-states world current-state goal)
-;           new-opened opened
-;           new-closed closed
-;           new-states states]
-;
-;      (if (empty? possible-next-states)
-;        [(dissoc new-opened current-state)                  ; Return the new opened states with the processed one removed.
-;         (assoc new-closed current-state (opened current-state)) ; Return the new closed states.
-;         new-states]
-;
-;        (let [current-child (first possible-next-states)
-;              [ret-opened ret-closed ret-states] (generate-state-data world current-child current-state new-opened new-closed new-states goal heuristic-fn)]
-;
-;          (recur
-;            (rest possible-next-states)
-;            ret-opened
-;            ret-closed
-;            ret-states))))))
-
 (defn static-deadspot-analysis
   [map-longvec goals]
 
@@ -401,31 +369,3 @@
               dude-pos)
             (find-blocks-pos line blocks-pos)
             (find-goals-pos line goals-pos)))))))
-
-
-
-; Static analysis functions
-
-
-;(defn analysis-dead-cells
-;  [world goal]
-;  (loop [opened [(first goal)]
-;         closed []
-;         dead-cells []]
-;    (if (= (count opened) 0)
-;      dead-cells
-;      (let [current-pos (first opened)
-;            current-state [current-pos #{}]
-;            possible-next-states (map
-;                                   (partial generate-new-state-from-transform current-state)
-;                                   (generate-new-positions world current-state))
-;            is-dead? (cell-is-dead? world current-state goal)]
-;        (recur (apply (partial conj (rest opened))
-;                      (filter
-;                        #(not (or (contains? opened (first %)) (contains? closed (first %))))
-;                        possible-next-states))
-;               (conj closed current-pos)
-;               (if is-dead?
-;                 (conj dead-cells current-pos)
-;                 dead-cells))))))
-; End of static analysis functions

@@ -52,55 +52,6 @@
                      (assoc target-node :dest [kw-to-add]))))
                (rest elements))))))
 
-;(defn- generate-one-state
-;  [child-key child-f child-g parent-key opened closed states]
-;  (cond (or
-;          (and
-;            (opened child-key)
-;            (> (opened child-key) child-f))
-;          (not (closed child-key))
-;          )
-;        [(assoc opened child-key child-f)
-;         closed
-;         (assoc states child-key {:g child-g :parent parent-key})]
-;
-;        (and (closed child-key) (> (closed child-key) child-f))
-;        [(assoc opened child-key child-f)
-;         (dissoc closed child-key)
-;         (assoc states child-key {:g child-g :parent parent-key})]
-;
-;        :else
-;        [opened closed states]))
-
-;(defn generate-new-states
-;  "Finds the new childrens and their cost"
-;  [world states opened closed goal]
-;  (let [parent-state-key ((first opened) 0)]
-;    (loop [possible-destinations ((world parent-state-key) :dest)
-;           new-opened opened
-;           new-closed closed
-;           new-states states]
-;      (if (empty? possible-destinations)
-;        [(dissoc new-opened parent-state-key)
-;         (assoc new-closed parent-state-key (new-opened parent-state-key))
-;         new-states]
-;
-;        (let [current-child-g (+ ((states parent-state-key) :g)
-;                                 (cost-of-move world parent-state-key (first possible-destinations)))]
-;          (let [[ret-opened ret-closed ret-states]
-;                (generate-one-state (first possible-destinations)
-;                                    (+ current-child-g (cost-of-move world (first possible-destinations) goal))
-;                                    current-child-g
-;                                    parent-state-key
-;                                    new-opened
-;                                    new-closed
-;                                    new-states)]
-;            (recur
-;              (rest possible-destinations)
-;              ret-opened
-;              ret-closed
-;              ret-states)))))))
-
 (defn print-solution [states-seq]
   (if (= (second states-seq) nil)
     (println)
