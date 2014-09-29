@@ -24,12 +24,6 @@
 (defn heuristic-1 [world state goal]
   1)
 
-(defn- block-is-dead?
-  "Returns true if block is in a dead spot"
-  [world state goal]
-
-  )
-
 (defn- deadlocks?
   "Returns true if there is a deadlock; otherwise false"
   [world state goal]
@@ -120,7 +114,7 @@
 
 (defn position-is-occupied-by
   [world
-   [_ block-set]
+   [_ block-set :as state]
    position]
   (cond
     (block-set position) :block
@@ -291,3 +285,45 @@
               dude-pos)
             (find-blocks-pos line blocks-pos)
             (find-goals-pos line goals-pos)))))))
+
+
+
+; Static analysis functions
+(defn cell-is-dead?
+  "Returns true if block is in a dead spot"
+  [world [position blocs :as state] goal]
+
+  ; if in corner && not a goals
+  (if (contains? goal position)
+    false
+    (let [bottom (= :wall (position-is-occupied-by world [[] #{}] ((fn [[x y]] [(inc x) y]) position)))
+          top (= :wall (position-is-occupied-by world [[] #{}] ((fn [[x y]] [(dec x) y]) position)))
+          right (= :wall (position-is-occupied-by world [[] #{}] ((fn [[x y]] [x (inc y)]) position)))
+          left (= :wall (position-is-occupied-by world [[] #{}] ((fn [[x y]] [x (dec y)]) position)))]
+      (and (or (and top left)
+               (and top right)
+               (and bottom left)
+               (and bottom right))))))
+
+(defn analysis-dead-cells
+  [world goal]
+  (loop [opened [(first goal)]
+         closed []
+         dead-cells []]
+    (if (= (count opened) 0)
+      dead-cells
+      (let [current-pos (first opened)
+            current-state [current-pos #{}]
+            possible-next-states (map
+                                   (partial generate-new-state-from-transform current-state)
+                                   (generate-new-positions world current-state))
+            is-dead? (cell-is-dead? world current-state goal)]
+        (recur (apply (partial conj (rest opened))
+                      (filter
+                        #(not (or (contains? opened (first %)) (contains? closed (first %))))
+                        possible-next-states))
+               (conj closed current-pos)
+               (if is-dead?
+                 (conj dead-cells current-pos)
+                 dead-cells))))))
+; End of static analysis functions
