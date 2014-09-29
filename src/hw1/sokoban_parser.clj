@@ -11,6 +11,18 @@
     (if (.find m)
       (recur m (conj res (.start m)))
       res)))
+; End of snippet
+
+(defn goal-satisfied?
+  [[_ blocks]
+   goal]
+  (= blocks goal)
+  )
+
+(defn cost-of-move [& _] 1)
+
+(defn heuristic-1 [world state goal]
+  1)
 
 (defn position-has-wall
   [{world :map}
@@ -19,13 +31,12 @@
         block (quot x (BLOCK-SIZE))
         idx-in-block (- x (* (BLOCK-SIZE) block))]
     (= 1 (bit-and
-      (bit-shift-right
-        (linevec block)
-
-        (-
-          (dec
-            (BLOCK-SIZE))
-          idx-in-block)) 1))))
+           (bit-shift-right
+             (linevec block)
+             (-
+               (dec
+                 (BLOCK-SIZE))
+               idx-in-block)) 1))))
 
 (defn position-is-occupied-by
   [world
@@ -77,24 +88,26 @@
 
 (defn is-valid-move
   [world
-   [dude-position _ :as state]
+   [dude-position :as state]
    move-fn]
 
   (let [new-dude-position (move-fn dude-position)]
 
-  (case (position-is-occupied-by world state new-dude-position)
-    :wall false
-    :empty true
-    :block (= :empty (position-is-occupied-by world state (move-fn new-dude-position))))))
+    (case (position-is-occupied-by world state new-dude-position)
+      :wall false
+      :empty true
+      :block (= :empty (position-is-occupied-by world state (move-fn new-dude-position)))
+      ;(= :empty (position-is-occupied-by world state (move-fn new-dude-position)))
+      :fuck)))
 
 (defn generate-new-positions
   [world
    state]
 
   (for [move-fn [(fn [[x y]] [(inc x) y])
-             (fn [[x y]] [(dec x) y])
-             (fn [[x y]] [x (inc y)])
-             (fn [[x y]] [x (dec y)])]
+                 (fn [[x y]] [(dec x) y])
+                 (fn [[x y]] [x (inc y)])
+                 (fn [[x y]] [x (dec y)])]
         :when (is-valid-move world state move-fn)]
     move-fn)
 
@@ -106,8 +119,76 @@
 
   )
 
+(defn generate-new-state-from-transform
+  "Returns a new state assuming that the transform given opens on a valid state."
+  [[dude-pos blocks]
+   transform-fn]
+  (let [new-dude-pos (transform-fn dude-pos)
+        new-blocks (if (contains? blocks new-dude-pos)
+                     (conj (disj blocks new-dude-pos) (transform-fn new-dude-pos))
+                     blocks)]
+    (conj [new-dude-pos] new-blocks)))
+
+(defn- generate-state-data
+  [world child-key parent-key opened closed states goal heuristic-fn]
+  (let [child-g (+ ((states parent-key) :g) ((world :cost-of-move) world child-key parent-key))
+        child-f (+ child-g (heuristic-fn world child-key goal))]
+    (cond (or
+            (and
+              (opened child-key)
+              (> (opened child-key) child-f))
+            (not (closed child-key))
+            )
+          [(assoc opened child-key child-f)
+           closed
+           (assoc states child-key {:g child-g :parent parent-key})]
+
+          (and (closed child-key) (> (closed child-key) child-f))
+          [(assoc opened child-key child-f)
+           (dissoc closed child-key)
+           (assoc states child-key {:g child-g :parent parent-key})]
+
+          :else
+          [opened closed states])))
+
 (defn generate-new-states
-  [world states opened closed goal] )
+  [world
+   states
+   opened
+   closed
+   goal
+   heuristic-fn]
+
+  (let [current-state (-> opened first first)]
+
+    (loop [possible-next-states (map
+                                  (partial generate-new-state-from-transform current-state)
+                                  (generate-new-positions world current-state))
+           new-opened opened
+           new-closed closed
+           new-states states]
+
+      (if (empty? possible-next-states)
+        [(dissoc new-opened current-state)                  ; Return the new opened states with the processed one removed.
+         (assoc new-closed current-state (opened current-state)) ; Return the new closed states.
+         new-states]
+
+        (let [current-child (first possible-next-states)
+              [ret-opened ret-closed ret-states] (generate-state-data world current-child current-state new-opened new-closed new-states goal heuristic-fn)]
+
+          (recur
+            (rest possible-next-states)
+            ret-opened
+            ret-closed
+            ret-states
+            )
+
+          )
+
+        )
+      ))
+
+  )
 
 (defn parse-map
   [file-name]
@@ -119,7 +200,12 @@
            blocks-pos (sorted-set)
            goals-pos (sorted-set)]
       (if (empty? rdr)
-        {:world {:map map-longvec :gen-children-states generate-new-states} :first-state [dude-pos blocks-pos] :goal goals-pos}
+        {:world       {:map                 map-longvec
+                       :cost-of-move        cost-of-move
+                       :gen-children-states generate-new-states
+                       :goal-satisfied?     goal-satisfied?}
+         :first-state [dude-pos blocks-pos]
+         :goal        goals-pos}
         (let [line (first rdr)]
           (recur
             (rest rdr)
