@@ -1,5 +1,6 @@
 (ns hw1.sokoban-parser
-  (:require [clojure.java.io :as io])
+  (:require [clojure.java.io :as io]
+            [clojure.set])
   (:gen-class))
 
 (defmacro BLOCK-SIZE [] 64)
@@ -37,22 +38,28 @@
 
   (+ (Math/abs (- x2 x1)) (Math/abs (- y2 y1))))
 
-(defn- m-distance-to-closest-goal
+(defn- m-distance-to-closest-in-coord-set
   [position
-   goals]
-  (apply min (map #(manathan-distance %1 position) goals)))
+   coord-set]
+  (if (empty? coord-set)
+    0
+    (let [distance-map (map #(manathan-distance %1 position) coord-set)]
+
+      (apply min distance-map)))
+  )
+
 
 (defn- m-distance-to-closest-pair
-  [[_ blocks :as state] goals]
+  [blocks goals]
 
-  (let [v (reduce #(+ %1 (m-distance-to-closest-goal %2 goals)) 0 blocks)]
+  (let [v (reduce #(+ %1 (m-distance-to-closest-in-coord-set %2 goals)) 0 blocks)]
     ;(println v)
     v
 
     ))
 
 (defn- m-distance-closest-pair-eliminating
-  [[_ blocks :as state] goals]
+  [blocks goals]
   (loop [blocks blocks
          goals goals
          distance 0]
@@ -60,26 +67,29 @@
       distance
 
 
-    (let [block-goals-combination-distance (for [b blocks
-                                                 g goals
-                                                 :let [bgd [(manathan-distance b g) b g]]]
-                                             bgd)
-          closest-pair (apply (partial min-key #(first %1)) block-goals-combination-distance)]
-      (recur
-        (disj blocks (nth closest-pair 1))
-        (disj goals (nth closest-pair 2))
-        (+ distance (first closest-pair)))))))
+      (let [block-goals-combination-distance (for [b blocks
+                                                   g goals
+                                                   :let [bgd [(manathan-distance b g) b g]]]
+                                               bgd)
+            closest-pair (apply (partial min-key #(first %1)) block-goals-combination-distance)]
+        (recur
+          (disj blocks (nth closest-pair 1))
+          (disj goals (nth closest-pair 2))
+          (+ distance (first closest-pair)))))))
 
 (defn heuristic [world state goals]
   ; Deadlocks
+  (let [satisfied-goals (clojure.set/intersection (second state) goals)
+        opened-boxes (clojure.set/difference (second state) satisfied-goals)
+        opened-goals (clojure.set/difference goals satisfied-goals)]
+    (+
 
-  (+
+       (m-distance-closest-pair-eliminating opened-boxes opened-goals)
+      ;(m-distance-to-closest-pair opened-boxes opened-goals)
+      (m-distance-to-closest-in-coord-set (first state) opened-boxes)
+      )
 
-    ;(* 1 (m-distance-closest-pair-eliminating state goals))
-    (m-distance-to-closest-pair state goals)
-    )
-
-  )
+    ))
 
 
 (defn- find-cardinal-point
