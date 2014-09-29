@@ -28,7 +28,6 @@
   "Returns true if block is in a dead spot"
   [world state goal]
 
-
   )
 
 (defn- deadlocks?
@@ -40,28 +39,52 @@
 (defn- manathan-distance
   "Returns the manathan distance between 2 cells"
   [[x1 y1]
-  [x2 y2]]
+   [x2 y2]]
 
-  (+ (- x2 x1) (- y2 y1)))
+  (+ (Math/abs (- x2 x1)) (Math/abs (- y2 y1))))
 
 (defn- m-distance-to-closest-goal
   [position
    goals]
+  (apply min (map #(manathan-distance %1 position) goals)))
+
+(defn- m-distance-to-closest-pair
+  [[_ blocks :as state] goals]
+
+  (let [v (reduce #(+ %1 (m-distance-to-closest-goal %2 goals)) 0 blocks)]
+    ;(println v)
+    v
+
+    ))
+
+(defn- m-distance-closest-pair-eliminating
+  [[_ blocks :as state] goals]
+  (loop [blocks blocks
+         goals goals
+         distance 0]
+    (if (empty? goals)
+      distance
 
 
+    (let [block-goals-combination-distance (for [b blocks
+                                                 g goals
+                                                 :let [bgd [(manathan-distance b g) b g]]]
+                                             bgd)
+          closest-pair (apply (partial min-key #(first %1)) block-goals-combination-distance)]
+      (recur
+        (disj blocks (nth closest-pair 1))
+        (disj goals (nth closest-pair 2))
+        (+ distance (first closest-pair)))))))
 
-  )
-
-(defn- m-distance-closest-block
-  [[dude blocks :as state] goal]
-
-  (map #() blocks)
-
-  )
-
-(defn heuristic [world state goal]
+(defn heuristic [world state goals]
   ; Deadlocks
-  ;
+
+  (+
+
+    ;(* 1 (m-distance-closest-pair-eliminating state goals))
+    (m-distance-to-closest-pair state goals)
+    )
+
   )
 
 
@@ -181,7 +204,9 @@
 (defn- generate-state-data
   [world child-key parent-key opened closed states goal heuristic-fn]
   (let [child-g (+ ((states parent-key) :g) ((world :cost-of-move) world child-key parent-key))
-        child-f (+ child-g (heuristic-fn world child-key goal))]
+        child-f (+ child-g (heuristic-fn world child-key goal))
+        ;_ (println child-f)
+        ]
     (cond (or
             (and
               (opened child-key)
@@ -253,7 +278,7 @@
                        :cost-of-move        cost-of-move
                        :gen-children-states generate-new-states
                        :goal-satisfied?     goal-satisfied?
-                       :printer print-solution}
+                       :printer             print-solution}
          :first-state [dude-pos blocks-pos]
          :goal        goals-pos}
         (let [line (first rdr)]
