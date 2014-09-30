@@ -88,11 +88,16 @@
    [c3 b3 a3]])
 
 (def all-deadlock-patterns
-  (let [r0 deadlock-patterns-unidirectionnal
-        r1 (rotmat r0)
-        r2 (rotmat r1)
-        r3 (rotmat r2)]
-    (reduce concat [r0 r1 r2 r3])))
+
+  (reduce concat
+  (pmap
+    (fn [shape]
+      (let [r0 shape
+            r1 (rotmat r0)
+            r2 (rotmat r1)
+            r3 (rotmat r2)]
+        [r0 r1 r2 r3])
+      ) deadlock-patterns-unidirectionnal)))
 
 
 
@@ -133,38 +138,29 @@
   (if (empty? coord-set)
     0
     (let [distance-map (map #(manathan-distance %1 position) coord-set)]
-
-      (apply min distance-map)))
-  )
-
-
-(defn- m-distance-to-closest-pair
-  [blocks goals]
-
-  (let [v (reduce #(+ %1 (m-distance-to-closest-in-coord-set %2 goals)) 0 blocks)]
-    ;(println v)
-    v
-
-    ))
+      (apply min distance-map))))
 
 (defn- m-distance-closest-pair-eliminating
   [blocks goals]
   (loop [blocks blocks
-         goals goals
+         goals (transient (vec goals))
          distance 0]
-    (if (empty? goals)
+    (if (empty? blocks)
       distance
 
+      (let [[cost block-to-remove]
+            (reduce (fn [[min-cost _ :as winning-block] current-block]
+                      (let [current-cost (manathan-distance (nth goals 0) current-block)]
+                        (if (> min-cost current-cost)
+                          [current-cost current-block]
+                          winning-block
+                          ))) [Integer/MAX_VALUE nil] blocks)
+            ]
 
-      (let [block-goals-combination-distance (for [b blocks
-                                                   g goals
-                                                   :let [bgd [(manathan-distance b g) b g]]]
-                                               bgd)
-            closest-pair (apply (partial min-key #(first %1)) block-goals-combination-distance)]
         (recur
-          (disj blocks (nth closest-pair 1))
-          (disj goals (nth closest-pair 2))
-          (+ distance (first closest-pair)))))))
+          (disj blocks block-to-remove)
+          (pop! goals)
+          (+ distance cost))))))
 
 (defn heuristic [world state goals]
   ; Deadlocks
@@ -173,8 +169,7 @@
         opened-goals (clojure.set/difference goals satisfied-goals)
         res (+
 
-              ;(m-distance-closest-pair-eliminating opened-boxes opened-goals)
-              ;(m-distance-to-closest-pair opened-boxes opened-goals)
+              (m-distance-closest-pair-eliminating opened-boxes opened-goals)
               (max 0 (dec (m-distance-to-closest-in-coord-set (first state) opened-boxes)))
               )]
 

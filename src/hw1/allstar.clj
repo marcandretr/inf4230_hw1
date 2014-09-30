@@ -8,27 +8,34 @@
 (defn- generate-state-data
   [world child-key parent-key opened closed states goal heuristic-fn]
   (let [child-g (+ ((states parent-key) :g) ((world :cost-of-move) world parent-key child-key))
-        _ (prn ((world :cost-of-move) world child-key parent-key) parent-key child-key)
-        child-f (+ child-g (heuristic-fn world child-key goal))
-        ;_ (println child-f)
-        ]
+        child-f (+ child-g (heuristic-fn world child-key goal))]
     (cond (or
             (and
               (opened child-key)
               (> (opened child-key) child-f))
-            (not (closed child-key))
+
+            (and
+              (not (closed child-key))
+              (not (opened child-key))))
+          (do
+            ;(prn "OP" "p" parent-key "c" child-key "| g" child-g "h" (heuristic-fn world child-key goal) "f" child-f )
+            [(assoc opened child-key child-f)
+             closed
+             (assoc states child-key {:g child-g :parent parent-key})]
             )
-          [(assoc opened child-key child-f)
-           closed
-           (assoc states child-key {:g child-g :parent parent-key})]
+
 
           (and (closed child-key) (> (closed child-key) child-f))
+          (do
+            ;(prn "CL" "p" parent-key "c" child-key "| g" child-g "h" (heuristic-fn world child-key goal) "f" child-f )
           [(assoc opened child-key child-f)
            (dissoc closed child-key)
-           (assoc states child-key {:g child-g :parent parent-key})]
+           (assoc states child-key {:g child-g :parent parent-key})])
 
           :else
-          [opened closed states])))
+          (do
+            ;(prn "NA" "p" parent-key "c" child-key "| g" child-g "h" (heuristic-fn world child-key goal) "f" child-f )
+          [opened closed states]))))
 
 (defn generate-new-states
   [world

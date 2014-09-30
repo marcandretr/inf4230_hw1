@@ -13,10 +13,10 @@
         [to-lat to-lng] (to :geo)
         rad-deg-ratio (/ (Math/PI) 180)
         twice-earth-radius 12742000
-        lng1 (/ (* from-lng Math/PI) 180)
-        lng2 (/ (* to-lng Math/PI) 180)
-        lat1 (/ (* from-lat Math/PI) 180)
-        lat2 (/ (* to-lat Math/PI) 180)
+        lng1 (* from-lng rad-deg-ratio)
+        lng2 (* to-lng rad-deg-ratio)
+        lat1 (* from-lat rad-deg-ratio)
+        lat2 (* to-lat rad-deg-ratio)
         s1 (Math/sin (/ (- lat2 lat1) 2))
         s2 (Math/sin (/ (- lng2 lng1) 2))]
 
@@ -29,7 +29,6 @@
                (Math/cos lat1)
                (Math/cos lat2)
                (Math/pow s2 2))))))))
-
 
 (defn parse-part-1
   [line-to-parse node-map]
@@ -72,8 +71,7 @@
            file-part 1
            node-map {}
            ways 0
-           segments 0
-           ]
+           segments 0]
       (if (empty? rdr)
         (do
           (println (format "# Nodes: %s | Ways: %s | Segs: %s" (count node-map) ways segments))
