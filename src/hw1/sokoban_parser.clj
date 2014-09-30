@@ -298,7 +298,8 @@
   (if (not= (second states-seq) nil)
     (do
       (print (find-cardinal-point (-> states-seq first first) (-> states-seq second first)) "")
-      (recur (rest states-seq)))))
+      (recur (rest states-seq)))
+    (println)))
 
 (defn generate-long-from-chunk
   [chunk]

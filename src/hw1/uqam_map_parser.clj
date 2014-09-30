@@ -55,7 +55,7 @@
   (if (= (second states-seq) nil)
     (println)
     (do
-      (print (second states-seq) "")
+      (print (name (second states-seq)) "")
       (recur (rest states-seq)))))
 
 (defn possible-next-states
