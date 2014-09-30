@@ -5,7 +5,7 @@
   (:gen-class))
 
 (defn cost-of-move
-  [world from to]
+  [world from to & _]
   (let [world-map (world :map)
         from (world-map from)
         to (world-map to)

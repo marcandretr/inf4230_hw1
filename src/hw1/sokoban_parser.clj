@@ -90,14 +90,20 @@
 (def all-deadlock-patterns
 
   (reduce concat
-  (pmap
-    (fn [shape]
-      (let [r0 shape
-            r1 (rotmat r0)
-            r2 (rotmat r1)
-            r3 (rotmat r2)]
-        [r0 r1 r2 r3])
-      ) deadlock-patterns-unidirectionnal)))
+          (pmap
+            (fn [shape]
+              (let [r0 shape
+                    r1 (rotmat r0)
+                    r2 (rotmat r1)
+                    r3 (rotmat r2)]
+                [r0 r1 r2 r3])
+              ) deadlock-patterns-unidirectionnal)))
+
+(def move-fns
+  [(fn [[x y]] [(inc x) y])
+   (fn [[x y]] [(dec x) y])
+   (fn [[x y]] [x (inc y)])
+   (fn [[x y]] [x (dec y)])])
 
 
 
@@ -154,23 +160,110 @@
                         (if (> min-cost current-cost)
                           [current-cost current-block]
                           winning-block
-                          ))) [Integer/MAX_VALUE nil] blocks)
-            ]
+                          ))) [Integer/MAX_VALUE nil] blocks)]
 
         (recur
           (disj blocks block-to-remove)
           (pop! goals)
           (+ distance cost))))))
 
-(defn heuristic [world state goals]
+(defn position-has-wall
+  [{world :map}
+   [x y]]
+  (let [linevec (world y)
+        block (quot x (BLOCK-SIZE))
+        idx-in-block (- x (* (BLOCK-SIZE) block))]
+    (= 1 (bit-and
+           (bit-shift-right
+             (linevec block)
+             (-
+               (dec
+                 (BLOCK-SIZE))
+               idx-in-block)) 1))))
+
+(defn position-is-occupied-by
+  [world
+   [_ block-set :as state]
+   position]
+  (cond
+    (block-set position) :block
+    (position-has-wall world position) :wall
+    :else :empty))
+
+(def pos-slices {
+                  [-1 0] [[[-1 -1] [0 -1]
+                           [-1 0] [0 0]]
+                          [[-1 0] [0 0]
+                           [-1 1] [0 1]]]
+                  [1 0]  [[[0 -1] [1 -1]
+                           [0 0] [1 0]]
+                          [[0 0] [1 0]
+                           [0 1] [1 1]]]
+                  [0 -1] [[[-1 -1] [0 -1]
+                           [-1 0] [0 0]]
+                          [[0 -1] [1 -1]
+                           [0 0] [1 0]]]
+                  [0 1]  [[[-1 0] [0 0]
+                           [-1 1] [0 1]]
+                          [[0 0] [1 0]
+                           [0 1] [1 1]]]
+                  })
+
+(defn dynamic-deadlock-detection
+  [world
+   [[dx dy :as dude-pos] boxes :as state]
+   goals
+   parent]
+
+
+  (let [common-boxes (clojure.set/intersection boxes (second parent))]
+    (if (= (second state) common-boxes)
+      0
+      (let [[cx cy :as child-box] (first (clojure.set/difference boxes common-boxes))
+            trans-vec [(- cx dx) (- cy dy)]
+            slices-rel (pos-slices trans-vec)
+            content-of-slices
+            (map
+              (fn [slice]
+                (map
+                  (fn [[sx sy]] (or (contains? goals [(+ sx cx) (+ sy cy)]) (position-is-occupied-by world state [(+ sx cx) (+ sy cy)])))
+                  slice))
+              slices-rel)
+            element-counter (fn [list-to-process] (reduce (fn [[blocker goals] content]
+                                                              (case content
+                                                                :block [(inc blocker) goals]
+                                                                :wall [(inc blocker) goals]
+                                                                true [blocker (inc goals)]
+                                                                [blocker goals])) [0 0] list-to-process))
+
+            [blocker-cnt goals-cnt] (element-counter (first content-of-slices))
+            [blocker-cnt2 goals-cnt2] (element-counter (second content-of-slices))]
+
+        (cond
+          (or
+           (= blocker-cnt 4)
+           (= blocker-cnt2 4)) (Double/POSITIVE_INFINITY)
+           :else 0)
+
+
+
+
+
+
+
+
+        ))))
+
+(defn heuristic [world current-state-key goals parent-state-key]
   ; Deadlocks
-  (let [satisfied-goals (clojure.set/intersection (second state) goals)
-        opened-boxes (clojure.set/difference (second state) satisfied-goals)
+  (let [satisfied-goals (clojure.set/intersection (second current-state-key) goals)
+        opened-boxes (clojure.set/difference (second current-state-key) satisfied-goals)
         opened-goals (clojure.set/difference goals satisfied-goals)
         res (+
 
               (m-distance-closest-pair-eliminating opened-boxes opened-goals)
-              (max 0 (dec (m-distance-to-closest-in-coord-set (first state) opened-boxes)))
+              (max 0 (dec (m-distance-to-closest-in-coord-set (first current-state-key) opened-boxes)))
+              (dynamic-deadlock-detection world current-state-key goals parent-state-key)
               )]
 
     (assert (>= res 0) (str "h() cannot be smaller than 0. h()=" res))
@@ -198,29 +291,6 @@
       )
     (println)
     ))
-
-(defn position-has-wall
-  [{world :map}
-   [x y]]
-  (let [linevec (world y)
-        block (quot x (BLOCK-SIZE))
-        idx-in-block (- x (* (BLOCK-SIZE) block))]
-    (= 1 (bit-and
-           (bit-shift-right
-             (linevec block)
-             (-
-               (dec
-                 (BLOCK-SIZE))
-               idx-in-block)) 1))))
-
-(defn position-is-occupied-by
-  [world
-   [_ block-set :as state]
-   position]
-  (cond
-    (block-set position) :block
-    (position-has-wall world position) :wall
-    :else :empty))
 
 (defn generate-long-from-chunk
   [chunk]
@@ -299,10 +369,7 @@
    state
    goal]
 
-  (for [move-fn [(fn [[x y]] [(inc x) y])
-                 (fn [[x y]] [(dec x) y])
-                 (fn [[x y]] [x (inc y)])
-                 (fn [[x y]] [x (dec y)])]
+  (for [move-fn move-fns
         :when (is-valid-move world state goal move-fn)]
     move-fn))
 

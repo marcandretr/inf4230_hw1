@@ -8,7 +8,7 @@
 (defn- generate-state-data
   [world child-key parent-key opened closed states goal heuristic-fn]
   (let [child-g (+ ((states parent-key) :g) ((world :cost-of-move) world parent-key child-key))
-        child-f (+ child-g (heuristic-fn world child-key goal))]
+        child-f (+ child-g (heuristic-fn world child-key goal parent-key))]
     (cond (or
             (and
               (opened child-key)
