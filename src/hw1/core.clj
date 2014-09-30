@@ -31,7 +31,6 @@
   (def a (hw1.sokoban-parser/parse-map map-path))
   ;(((a :world) :printer) (hw1.allstar/a-star (a :world) (a :first-state) (a :goal) hw1.sokoban-parser/heuristic-1))
   (((a :world) :printer) (hw1.allstar/a-star (a :world) (a :first-state) (a :goal) hw1.sokoban-parser/heuristic))
-
   )
 
 (defn uqam-star

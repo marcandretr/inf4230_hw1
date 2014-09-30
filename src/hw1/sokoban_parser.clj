@@ -3,15 +3,14 @@
             [clojure.set])
   (:gen-class))
 
+; The block size is 64 because we can stock 64 blocks in binary representation in a Long (ie. bit ON for a block, OFF for nothing)
 (defmacro BLOCK-SIZE [] 64)
 
 
 
+; UNUSED START
 (def deadlock-patterns-unidirectionnal
   [
-    ; [[:any :any]
-    ; [:any :any]]
-
     [[:wal :wal :emp]
      [:wal :emp :wal]
      [:emp :bal :wal]]
@@ -90,7 +89,7 @@
 (def all-deadlock-patterns
 
   (reduce concat
-          (pmap
+          (map
             (fn [shape]
               (let [r0 shape
                     r1 (rotmat r0)
@@ -98,7 +97,10 @@
                     r3 (rotmat r2)]
                 [r0 r1 r2 r3])
               ) deadlock-patterns-unidirectionnal)))
+; UNUSED END
 
+
+; The functions representing the possible movements
 (def move-fns
   [(fn [[x y]] [(inc x) y])
    (fn [[x y]] [(dec x) y])
@@ -106,8 +108,9 @@
    (fn [[x y]] [x (dec y)])])
 
 
-
 ; Snippet from http://stackoverflow.com/a/3266877/2332936
+; Modified to return the positions of the matches
+; Return the positions of RegEx matches in a string
 (defn re-pos [re s]
   (loop [m (re-matcher re s)
          res []]
@@ -116,19 +119,25 @@
       res)))
 ; End of snippet
 
+
 (defn goal-satisfied?
-  [[_ blocks]
-   goal]
-  (= blocks goal)
-  )
+  "Return true if the goal is satisfied."
+  [[_ blocks] goal]
+  (= blocks goal))
 
-(defn cost-of-move [& _] 1)
-
-(defn heuristic-1 [world state goal]
+(defn cost-of-move
+  "Return the cost to execute one movement. In sokoban, the cost is always 1."
+  [& _]
   1)
 
+(defn heuristic-1
+  "Return 1 as the heuristique which transform our A* in a Djikstra algorythm"
+  [world state goal]
+  1)
+
+; UNUSED
 (defn- deadlocks?
-  "Returns true if there is a deadlock; otherwise false"
+  "Returns true if there is a deadlock otherwise false"
   [world state goal])
 
 (defn- manathan-distance
@@ -139,14 +148,16 @@
   (+ (Math/abs ^Integer (- x2 x1)) (Math/abs ^Integer (- y2 y1))))
 
 (defn- m-distance-to-closest-in-coord-set
+  "Return the manathan distance of the positions and the closest coordinate of a collection"
   [position
    coord-set]
   (if (empty? coord-set)
-    0
+    0 ; return 0 if there's nothing in the set
     (let [distance-map (map #(manathan-distance %1 position) coord-set)]
-      (apply min distance-map))))
+      (apply min distance-map)))) ; return the minimal distance after calculating distances between position and each coords
 
 (defn- m-distance-closest-pair-eliminating
+  ""
   [blocks goals]
   (loop [blocks blocks
          goals (transient (vec goals))
