@@ -6,7 +6,6 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/data.priority-map "0.0.5"]
                  [org.clojure/data.xml "0.0.8"]
-                 [criterium "0.4.3"]
                  [swiss-arrows "1.0.0"]]
   :plugins [[codox "0.8.10"]]
   :codox {:defaults {:doc/format :markdown}}
