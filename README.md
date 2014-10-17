@@ -9,11 +9,15 @@ This project is made for a course of artificial intelligence. It implements an A
 ## Usage
 
 Map shortest path:
+
     `$ time sudo nice --20 java -Xmx2g -XX:+AggressiveOpts -jar target/uberjar/hw1-0.0.1-standalone.jar hw1.uqam_entry %@`
+
 Where %@ is the path to a valid map (eg. 'resources/uqam-map-1.txt').
 
 Sokoban solver:
+
     `$ time sudo nice --20 java -Xmx2g -XX:+AggressiveOpts -jar target/uberjar/hw1-0.0.1-standalone.jar hw1.sokoban_entry %@`
+
 Where %@ is the path to a valid sokoban map (eg. 'resources/test/sokoban00.txt').
 
 ## License
